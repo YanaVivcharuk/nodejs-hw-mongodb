@@ -1,40 +1,49 @@
-import 'dotenv/config';
-import { initMongoConnection } from './db/initMongoConnection.js';
+import dotenv from 'dotenv';
 import express from 'express';
 import cors from 'cors';
 import pino from 'pino-http';
+import cookieParser from 'cookie-parser';
+import fs from 'fs';
+import path from 'path';
+
+import authRouter from './routers/auth.js';
 import contactsRouter from './routers/contacts.js';
-import { errorHandler } from './middlewares/errorHandler.js';
-import { notFoundHandler } from './middlewares/notFoundHandler.js';
+import notFoundHandler from './middlewares/notFoundHandler.js';
+import errorHandler from './middlewares/errorHandler.js';
 
-const app = express();
-const PORT = process.env.PORT || 3000;
+import swaggerUi from 'swagger-ui-express';
 
-app.use(cors());
+const swaggerDocument = JSON.parse(
+  fs.readFileSync(path.resolve('docs/swagger.json'), 'utf-8'),
+);
 
-app.use(pino());
+dotenv.config();
 
-app.use(express.json());
+function setupServer() {
+  const app = express();
 
-app.get('/', (req, res) => {
-  res.send('Welcome to Contacts API!');
-});
+  app.use(cors());
+  app.use(pino());
+  app.use(express.json());
+  app.use(cookieParser());
 
-app.use('/contacts', contactsRouter);
+  app.get('/', (req, res) => {
+    res.json({ message: 'Welcome to my API' });
+  });
 
-app.use(notFoundHandler);
-app.use(errorHandler);
+  app.use(
+    ['/api-docs', '/api-docs/'],
+    swaggerUi.serve,
+    swaggerUi.setup(swaggerDocument),
+  );
 
-export async function setupServer() {
-  try {
-    await initMongoConnection();
+  app.use('/auth', authRouter);
+  app.use('/contacts', contactsRouter);
 
-    app.listen(PORT, '0.0.0.0', () => {
-      console.log(`Server is running on port ${PORT}`);
-    });
-  } catch (error) {
-    console.log('Error:', error);
-  }
+  app.use(notFoundHandler);
+  app.use(errorHandler);
+
+  return app;
 }
 
-export default app;
+export default setupServer;
