@@ -1,49 +1,43 @@
-import dotenv from 'dotenv';
+import 'dotenv/config';
+import { initMongoConnection } from './db/initMongoConnection.js';
 import express from 'express';
 import cors from 'cors';
 import pino from 'pino-http';
+import { errorHandler } from './middlewares/errorHandler.js';
+import { notFoundHandler } from './middlewares/notFoundHandler.js';
+import routes from './routers/index.js';
 import cookieParser from 'cookie-parser';
-import fs from 'fs';
-import path from 'path';
+import { UPLOAD_DIR } from './constants/index.js';
 
-import authRouter from './routers/auth.js';
-import contactsRouter from './routers/contacts.js';
-import notFoundHandler from './middlewares/notFoundHandler.js';
-import errorHandler from './middlewares/errorHandler.js';
+const app = express();
+const PORT = process.env.PORT || 3000;
 
-import swaggerUi from 'swagger-ui-express';
+app.use(cors());
 
-const swaggerDocument = JSON.parse(
-  fs.readFileSync(path.resolve('docs/swagger.json'), 'utf-8'),
-);
+app.use(pino());
 
-dotenv.config();
+app.use(express.json());
+app.use(cookieParser());
+app.use('/uploads', express.static(UPLOAD_DIR));
 
-function setupServer() {
-  const app = express();
+app.get('/', (req, res) => {
+  res.send('Welcome to Contacts API!');
+});
 
-  app.use(cors());
-  app.use(pino());
-  app.use(express.json());
-  app.use(cookieParser());
+app.use('/', routes);
+(ів, app.use(notFoundHandler));
+app.use(errorHandler);
 
-  app.get('/', (req, res) => {
-    res.json({ message: 'Welcome to my API' });
-  });
+export async function setupServer() {
+  try {
+    await initMongoConnection();
 
-  app.use(
-    ['/api-docs', '/api-docs/'],
-    swaggerUi.serve,
-    swaggerUi.setup(swaggerDocument),
-  );
-
-  app.use('/auth', authRouter);
-  app.use('/contacts', contactsRouter);
-
-  app.use(notFoundHandler);
-  app.use(errorHandler);
-
-  return app;
+    app.listen(PORT, () => {
+      console.log(`Server is running on port ${PORT}`);
+    });
+  } catch (error) {
+    console.log('Error:', error);
+  }
 }
 
-export default setupServer;
+export default app;
