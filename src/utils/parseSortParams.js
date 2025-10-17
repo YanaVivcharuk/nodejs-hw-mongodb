@@ -24,6 +24,15 @@ const parseSortBy = (sortBy) => {
   return '_id';
 };
 
+// export function parseSortOrder(value) {
+//  if (typeof value === "udefined") {
+//   return "asc";
+//  } if ( value !== "asc" && value !== "desc") {
+//   return "asc";
+// }
+// return value;
+// }
+
 export const parseSortParams = (query) => {
   const { sortOrder = SORT_ORDER.ASC, sortBy = 'name' } = query;
   console.log({ sortOrder, sortBy });
