@@ -25,7 +25,7 @@ app.get('/', (req, res) => {
 });
 
 app.use('/', routes);
-(ів, app.use(notFoundHandler));
+app.use(notFoundHandler);
 app.use(errorHandler);
 
 export async function setupServer() {
