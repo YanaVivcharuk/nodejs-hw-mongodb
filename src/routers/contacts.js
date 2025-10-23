@@ -20,6 +20,7 @@ router.use(authenticate);
 router.get('/', ctrlWrapper(getContactsController));
 
 router.get('/:contactId', isValidId, ctrlWrapper(getContactByIdController));
+router.get('/:id', isValidId, ctrlWrapper(getContactByIdController));
 
 router.post(
   '/',
@@ -31,6 +32,10 @@ router.delete('/:contactId', isValidId, ctrlWrapper(deleteContactController));
 
 router.patch(
   '/:contactId',
+router.delete('/:id', isValidId, ctrlWrapper(deleteContactController));
+
+router.patch(
+  '/:id',
   isValidId,
   validateBody(updateContactSchema),
   ctrlWrapper(patchContactController),

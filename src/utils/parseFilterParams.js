@@ -5,6 +5,7 @@ export const parseFilterParams = (query) => {
 
   if (query.type) {
     filter.contactType = query.type.trim();
+    filter.contactType = query.type.trim(); //  фільтрація по типу
   }
 
   if (typeof query.isFavourite !== 'undefined') {
