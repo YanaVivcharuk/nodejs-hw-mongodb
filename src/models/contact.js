@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+import mongoose, { Schema } from 'mongoose';
 
 const contactSchema = new mongoose.Schema(
   {
@@ -15,6 +15,8 @@ const contactSchema = new mongoose.Schema(
     email: {
       type: String,
       trim: true,
+      required: true,
+      unique: true,
     },
     isFavourite: {
       type: Boolean,
@@ -26,10 +28,14 @@ const contactSchema = new mongoose.Schema(
       required: true,
       default: 'personal',
     },
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: true,
+    },
   },
   {
     timestamps: true,
-    versionKey: false,
   },
 );
 
