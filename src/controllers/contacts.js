@@ -16,7 +16,6 @@ export const getContactsController = async (req, res, next) => {
   const { page, perPage } = parsePaginationParams(req.query);
   const { sortBy, sortOrder } = parseSortParams(req.query);
   const filter = parseFilterParams(req.query);
-  const filter = parseFilterParams(req.query); // 👈 фільтрація
 
   const contacts = await getContacts({
     page,
@@ -74,11 +73,6 @@ export async function createContactController(req, res, next) {
     data: contact,
   });
 }
-
-export async function deleteContactController(req, res, next) {
-  const { id } = req.params;
-
-  const result = await deleteContact(id);
 
 export async function deleteContactController(req, res, next) {
   const { contactId } = req.params;

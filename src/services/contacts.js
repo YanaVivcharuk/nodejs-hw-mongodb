@@ -1,8 +1,6 @@
 import { Contact } from '../models/contact.js';
 import { SORT_ORDER } from '../constants/index.js';
 
-import { SORT_ORDER } from '../constants/index.js';
-
 export async function getContacts({
   page = 1,
   perPage = 10,
@@ -16,13 +14,11 @@ export async function getContacts({
 
   const [contacts, totalItems] = await Promise.all([
     Contact.find({ userId })
-    Contact.find(filter)
       .skip(skip)
       .limit(perPage)
       .sort({ [sortBy]: sortOrder })
       .exec(),
     Contact.countDocuments({ userId }),
-    Contact.countDocuments(filter),
   ]);
 
   const totalPages = Math.ceil(totalItems / perPage);
