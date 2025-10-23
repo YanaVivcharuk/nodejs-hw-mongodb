@@ -4,6 +4,7 @@ export const parseFilterParams = (query) => {
   const filter = {};
 
   if (query.type) {
+    filter.contactType = query.type.trim();
     filter.contactType = query.type.trim(); //  фільтрація по типу
   }
 
