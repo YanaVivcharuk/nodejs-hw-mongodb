@@ -6,8 +6,6 @@ import bcrypt from 'bcrypt';
 import { randomBytes } from 'crypto';
 import { FIFTEEN_MINUTES, SMTP, THIRTY_DAYS } from '../constants/index.js';
 import { Session } from '../models/session.js';
-import { access } from 'fs';
-import { th } from '@faker-js/faker';
 import jwt from 'jsonwebtoken';
 import { getEnvVariable } from '../utils/getEnvVariable.js';
 import Handlebars from 'handlebars';
@@ -35,6 +33,7 @@ export const loginUser = async (payload) => {
   if (user === null) {
     throw createHttpError(401, 'User not found');
   }
+
   const isEqual = await bcrypt.compare(payload.password, user.password);
   if (!isEqual) {
     throw createHttpError(401, 'Unauthorized');
@@ -43,7 +42,6 @@ export const loginUser = async (payload) => {
   await Session.deleteOne({ userId: user._id });
 
   const accessToken = randomBytes(30).toString('base64');
-
   const refreshToken = randomBytes(30).toString('base64');
 
   return await Session.create({
@@ -72,31 +70,20 @@ const createSession = () => {
 };
 
 export const refreshUsersSession = async ({ sessionId, refreshToken }) => {
-  const session = await Session.findOne({
-    _id: sessionId,
-    refreshToken,
-  });
+  const session = await Session.findOne({ _id: sessionId, refreshToken });
 
   if (!session) {
     throw createHttpError(401, 'Session not found');
-  }
-
-  if (session.refreshToken !== refreshToken) {
-    throw createHttpError(401, 'Invalid refresh token');
   }
 
   if (session.refreshTokenValidUntil < new Date()) {
     throw createHttpError(401, 'Refresh token expired');
   }
 
-  const isSessionTokenExpired = new Date() > session.refreshTokenValidUntil;
-  if (isSessionTokenExpired) {
-    throw createHttpError(401, 'Refresh token expired');
-  }
-
   const newSession = createSession();
 
   await Session.deleteOne({ _id: sessionId, refreshToken });
+
   return await Session.create({
     userId: session.userId,
     ...newSession,
@@ -106,26 +93,38 @@ export const refreshUsersSession = async ({ sessionId, refreshToken }) => {
 export const requestPasswordReset = async (email) => {
   const user = await User.findOne({ email });
   if (!user) {
-    throw createHttpError(404, 'User not found');
+    throw createHttpError(404, 'User not found!');
   }
+
   const token = jwt.sign(
     { sub: user._id, email },
     getEnvVariable('JWT_SECRET'),
-    {
-      expiresIn: '5m',
-    },
+    { expiresIn: '5m' },
   );
+
+  const appDomain = getEnvVariable('APP_DOMAIN');
+  const resetLink = `${appDomain}/reset-password?token=${token}`;
+
   const template = Handlebars.compile(REQUEST_PASSWORD_RESET_TEMPLATE);
 
-  await sendEmail({
-    from: getEnvVariable(SMTP.SMTP_FROM),
-    to: email,
-    subject: 'Reset password instruction',
-    html: template({
-      resetPasswordLink: `http://localhost:3000/reset-password?token=${token}`,
-    }),
-  });
+  try {
+    await sendEmail({
+      from: getEnvVariable(SMTP.SMTP_FROM),
+      to: email,
+      subject: 'Reset password instruction',
+      html: template({ resetPasswordLink: resetLink }),
+    });
+  } catch (error) {
+    console.error('Failed to send the email:', error);
+    throw createHttpError(
+      500,
+      'Failed to send the email, please try again later.',
+    );
+  }
+
+  return true;
 };
+
 export async function resetPassword(token, password) {
   try {
     const decoded = jwt.verify(token, getEnvVariable('JWT_SECRET'));
