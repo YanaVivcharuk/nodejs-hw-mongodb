@@ -37,4 +37,6 @@ export async function setupServer() {
   }
 }
 
+setupServer();
+
 export default app;
