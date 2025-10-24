@@ -1,3 +1,4 @@
+import Joi from 'joi';
 import mongoose, { Schema } from 'mongoose';
 
 const contactSchema = new mongoose.Schema(
@@ -28,6 +29,11 @@ const contactSchema = new mongoose.Schema(
       required: true,
       default: 'personal',
     },
+
+    photo: {
+      type: String,
+    },
+
     userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
