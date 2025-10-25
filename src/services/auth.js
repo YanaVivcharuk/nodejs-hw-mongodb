@@ -50,7 +50,7 @@ export const logoutUser = async (sessionId) => {
   await Session.deleteOne({ _id: sessionId });
 };
 
-const createSession = () => {
+const createSessionTokens = () => {
   const accessToken = randomBytes(30).toString('base64');
   const refreshToken = randomBytes(30).toString('base64');
 
@@ -63,40 +63,23 @@ const createSession = () => {
 };
 
 export const refreshUsersSession = async ({ sessionId, refreshToken }) => {
-  const session = await Session.findOne({
-    _id: sessionId,
-    refreshToken,
-  });
-
+  const session = await Session.findOne({ _id: sessionId, refreshToken });
   if (!session) {
     throw createHttpError(401, 'Session not found');
   }
 
-  if (session.refreshToken !== refreshToken) {
-    throw createHttpError(401, 'Invalid refresh token');
-  }
-
   if (session.refreshTokenValidUntil < new Date()) {
+    await Session.deleteOne({ _id: sessionId });
     throw createHttpError(401, 'Refresh token expired');
   }
 
-  const isSessionTokenExpired = new Date() > session.refreshTokenValidUntil;
-  if (isSessionTokenExpired) {
-    throw createHttpError(401, 'Refresh token expired');
-  }
+  const tokens = createSessionTokens();
 
-  const newSession = createSession();
+  session.accessToken = tokens.accessToken;
+  session.refreshToken = tokens.refreshToken;
+  session.accessTokenValidUntil = tokens.accessTokenValidUntil;
+  session.refreshTokenValidUntil = tokens.refreshTokenValidUntil;
+  await session.save();
 
-  await Session.deleteOne({ _id: sessionId, refreshToken });
-  return await Session.create({
-    userId: session.userId,
-    ...newSession,
-  });
-};
-
-export const requestResetToken = async (email) => {
-  const user = await User.findOne({ email });
-  if (!user) {
-    throw createHttpError(404, 'User not found');
-  }
+  return session;
 };
