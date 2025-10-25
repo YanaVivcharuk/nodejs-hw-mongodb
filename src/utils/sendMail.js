@@ -1,16 +1,22 @@
 import nodemailer from 'nodemailer';
+
 import { SMTP } from '../constants/index.js';
-import { getEnvVar } from '../utils/getEnvVar.js';
+import { getEnvVariable } from '../utils/getEnvVariable.js';
 
 const transporter = nodemailer.createTransport({
-  host: getEnvVar(SMTP.SMTP_HOST),
-  port: Number(getEnvVar(SMTP.SMTP_PORT)),
+  host: getEnvVariable(SMTP.SMTP_HOST),
+  port: Number(getEnvVariable(SMTP.SMTP_PORT)),
   auth: {
-    user: getEnvVar(SMTP.SMTP_USER),
-    pass: getEnvVar(SMTP.SMTP_PASSWORD),
+    user: getEnvVariable(SMTP.SMTP_USER),
+    pass: getEnvVariable(SMTP.SMTP_PASSWORD),
   },
 });
 
-export const sendMail = async (options) => {
-  return transporter.sendMail(options);
+export const sendEmail = async ({ from, to, subject, html }) => {
+  try {
+    await transporter.sendMail({ from, to, subject, html });
+  } catch (error) {
+    console.error('Error sending email:', error);
+    throw error;
+  }
 };
