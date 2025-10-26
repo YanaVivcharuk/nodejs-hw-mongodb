@@ -31,7 +31,6 @@ export const loginUserController = async (req, res) => {
 
       expires: new Date(Date.now() + THIRTY_DAYS),
     });
-
     res.cookie('sessionId', session._id, {
       httpOnly: true,
       expires: new Date(Date.now() + THIRTY_DAYS),

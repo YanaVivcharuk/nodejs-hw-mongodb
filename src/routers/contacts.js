@@ -28,7 +28,6 @@ router.post(
   validateBody(contactSchema),
   ctrlWrapper(createContactController),
 );
-
 router.delete('/:contactId', isValidId, ctrlWrapper(deleteContactController));
 
 router.patch(

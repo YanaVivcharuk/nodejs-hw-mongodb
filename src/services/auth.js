@@ -35,6 +35,7 @@ export const loginUser = async (payload) => {
   if (user === null) {
     throw createHttpError(401, 'User not found');
   }
+
   const isEqual = await bcrypt.compare(payload.password, user.password);
   if (!isEqual) {
     throw createHttpError(401, 'Unauthorized');
@@ -43,7 +44,6 @@ export const loginUser = async (payload) => {
   await Session.deleteOne({ userId: user._id });
 
   const accessToken = randomBytes(30).toString('base64');
-
   const refreshToken = randomBytes(30).toString('base64');
 
   return await Session.create({
@@ -76,6 +76,8 @@ export const refreshUsersSession = async ({ sessionId, refreshToken }) => {
     _id: sessionId,
     refreshToken,
   });
+  const session = await Session.findOne({ _id: sessionId, refreshToken });
+
   if (!session) {
     throw createHttpError(401, 'Session not found');
   }
@@ -96,6 +98,11 @@ export const refreshUsersSession = async ({ sessionId, refreshToken }) => {
   const newSession = createSession();
 
   await Session.deleteOne({ _id: sessionId, refreshToken });
+  return session;
+  const newSession = createSession();
+
+  await Session.deleteOne({ _id: sessionId, refreshToken });
+
   return await Session.create({
     userId: session.userId,
     ...newSession,
@@ -125,6 +132,36 @@ export const requestPasswordReset = async (email) => {
       resetPasswordLink: `http://localhost:3000/reset-password?token=${token}`,
     }),
   });
+    throw createHttpError(404, 'User not found!');
+  }
+
+  const token = jwt.sign(
+    { sub: user._id, email },
+    getEnvVariable('JWT_SECRET'),
+    { expiresIn: '5m' },
+  );
+
+  const appDomain = getEnvVariable('APP_DOMAIN');
+  const resetLink = `${appDomain}/reset-password?token=${token}`;
+
+  const template = Handlebars.compile(REQUEST_PASSWORD_RESET_TEMPLATE);
+
+  try {
+    await sendEmail({
+      from: getEnvVariable(SMTP.SMTP_FROM),
+      to: email,
+      subject: 'Reset password instruction',
+      html: template({ resetPasswordLink: resetLink }),
+    });
+  } catch (error) {
+    console.error('Failed to send the email:', error);
+    throw createHttpError(
+      500,
+      'Failed to send the email, please try again later.',
+    );
+  }
+
+  return true;
 };
 
 export async function resetPassword(token, password) {

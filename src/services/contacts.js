@@ -1,5 +1,6 @@
 import { Contact } from '../models/contact.js';
 import { SORT_ORDER } from '../constants/index.js';
+import createHttpError from 'http-errors';
 
 export async function getContacts({
   page = 1,
@@ -49,17 +50,28 @@ export async function deleteContact(contactId, userId) {
 }
 
 export async function updateContact(contactId, payload, userId, options = {}) {
-  const updatedContact = await Contact.findOneAndUpdate(
-    {
-      _id: contactId,
-      userId: userId,
-    },
-    payload,
-    {
-      new: true,
-      ...options,
-    },
-  );
+  if (payload.email) {
+    const existing = await Contact.findOne({ email: payload.email, userId });
+    if (existing && existing._id.toString() !== contactId) {
+      throw createHttpError(409, 'Email in use');
+    }
+  }
+
+  let updatedContact;
+  try {
+    updatedContact = await Contact.findOneAndUpdate(
+      { _id: contactId, userId },
+      { $set: payload },
+      { new: true, runValidators: true, ...options },
+    );
+  } catch (error) {
+    if (error.code === 11000 && !payload.email) {
+      updatedContact = await Contact.findOne({ _id: contactId, userId });
+    } else {
+      throw error;
+    }
+  }
+
   if (!updatedContact) return null;
 
   return {

@@ -16,4 +16,11 @@ export const sendEmail = async (mail) => {
   mail.from = 'alena.havaleshko@gmail.com';
 
   return await transporter.sendMail(mail);
+export const sendEmail = async ({ from, to, subject, html }) => {
+  try {
+    await transporter.sendMail({ from, to, subject, html });
+  } catch (error) {
+    console.error('Error sending email:', error);
+    throw error;
+  }
 };
