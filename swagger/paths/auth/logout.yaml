@@ -1,0 +1,25 @@
+tags:
+  - Auth
+summary: Log out user
+operationId: logoutUser
+description: Invalidate current user's session (requires bearer token)
+security:
+  - bearerAuth: []
+responses:
+  '200':
+    description: Successfully logged out
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            status:
+              type: integer
+              example: 200
+            message:
+              type: string
+              example: Logout successful
+  '401':
+    $ref: ../../components/responses/401.yaml
+  '500':
+    $ref: ../../components/responses/500.yaml

@@ -1,0 +1,16 @@
+description: Internal Server Error — An unexpected error occurred on the server.
+content:
+  application/json:
+    schema:
+      type: object
+      required:
+        - status
+        - message
+        - data
+      properties:
+        status:
+          type: integer
+          example: 500
+        message:
+          type: string
+          example: 'Internal server error. Please try again later.'

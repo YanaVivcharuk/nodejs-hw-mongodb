@@ -1,0 +1,80 @@
+tags:
+  - Contacts
+summary: Update contact by id
+operationId: updateContact
+description: Update specific fields of a contact by its unique ID
+security:
+  - bearerAuth: []
+parameters:
+  - in: path
+    name: id
+    required: true
+    schema:
+      type: string
+      example: '68eaaf8fa9ad4f0487d3d847'
+    description: The unique ID of the contact to update
+requestBody:
+  required: true
+  content:
+    multipart/form-data:
+      schema:
+        type: object
+        properties:
+          name:
+            type: string
+            example: 'John Doe'
+          email:
+            type: string
+            example: 'john.doe@example.com'
+          phoneNumber:
+            type: string
+            example: '+380665556677'
+          contactType:
+            type: string
+            enum: ['work', 'home', 'personal']
+          isFavourite:
+            type: boolean
+            example: false
+          photo:
+            type: string
+            format: binary
+        description: Fields to update (at least one field is required)
+responses:
+  '200':
+    description: Successfully updated contact
+    content:
+      application/json:
+        schema:
+          type: object
+          required:
+            - status
+            - message
+            - data
+          properties:
+            status:
+              type: integer
+              example: 200
+            message:
+              type: string
+              example: Successfully updated contact with id 68eaaf8fa9ad4f0487d3d847!
+            data:
+              $ref: ../../../components/schemas/contact.yaml
+  '400':
+    $ref: ../../../components/responses/400.yaml
+  '401':
+    $ref: ../../../components/responses/401.yaml
+  '404':
+    description: Contact not found
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            status:
+              type: integer
+              example: 404
+            message:
+              type: string
+              example: Contact with id 68eaaf8fa9ad4f0487d3d847 not found
+  '500':
+    $ref: ../../../components/responses/500.yaml
