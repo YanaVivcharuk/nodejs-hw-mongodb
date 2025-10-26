@@ -1,0 +1,45 @@
+type: object
+required:
+  - name
+  - phoneNumber
+  - email
+  - userId
+  - contactType
+  - createdAt
+  - updatedAt
+properties:
+  name:
+    description: "Student's name"
+    type: string
+    example: 'John Doe'
+  phoneNumber:
+    description: "Student's phone number"
+    type: number
+    example: 0665556688
+  email:
+    description: "Student's email"
+    type: string
+    example: example@gmail.com
+  contactType:
+    description: " Contact's type"
+    type: string
+    enum: ['work', 'home', 'personal']
+  userId:
+    description: "Contact's id"
+    type: string
+    example: 68eaaf8fa9ad4f0487d3d847
+  createdAt:
+    format: date-time
+    type: string
+    example: 2025-10-07T18:37:55.344+00:00
+  updatedAt:
+    format: date-time
+    type: string
+    example: 2025-10-07T18:37:55.344+00:00
+  isFavourite:
+    description: "Whether is student's favourite"
+    type: boolean
+    example: false
+  photo:
+    description: " Link to contact's photo"
+    type: string

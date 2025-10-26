@@ -22,7 +22,6 @@ export const registerUserController = async (req, res) => {
     res.status(error.statusCode || 500).json({ error: error.message });
   }
 };
-
 export const loginUserController = async (req, res) => {
   try {
     const session = await loginUser(req.body);
@@ -64,7 +63,6 @@ export const logoutUserController = async (req, res) => {
     res.status(error.statusCode || 500).json({ error: error.message });
   }
 };
-
 const setupSession = (res, session) => {
   res.cookie('refreshToken', session.refreshToken, {
     httpOnly: true,
