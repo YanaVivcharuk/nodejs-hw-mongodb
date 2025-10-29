@@ -76,7 +76,6 @@ export const refreshUsersSession = async ({ sessionId, refreshToken }) => {
     _id: sessionId,
     refreshToken,
   });
-  const session = await Session.findOne({ _id: sessionId, refreshToken });
 
   if (!session) {
     throw createHttpError(401, 'Session not found');
