@@ -92,14 +92,11 @@ export const refreshUsersSession = async ({ sessionId, refreshToken }) => {
     throw createHttpError(401, 'Refresh token expired');
   }
 
-  const newSession = createSession();
-
-  await Session.deleteOne({ _id: sessionId, refreshToken });
-
-  return await Session.create({
-    userId: session.userId,
-    ...newSession,
-  });
+  return {
+    sessionId: session._id,
+    accessToken: session.accessToken,
+    refreshToken: session.refreshToken,
+  };
 };
 
 export const requestPasswordReset = async (email) => {
