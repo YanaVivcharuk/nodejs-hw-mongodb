@@ -6,8 +6,6 @@ import bcrypt from 'bcrypt';
 import { randomBytes } from 'crypto';
 import { FIFTEEN_MINUTES, SMTP, THIRTY_DAYS } from '../constants/index.js';
 import { Session } from '../models/session.js';
-import { access } from 'fs';
-import { th } from '@faker-js/faker';
 import jwt from 'jsonwebtoken';
 import { getEnvVariable } from '../utils/getEnvVariable.js';
 import Handlebars from 'handlebars';
@@ -97,10 +95,6 @@ export const refreshUsersSession = async ({ sessionId, refreshToken }) => {
   const newSession = createSession();
 
   await Session.deleteOne({ _id: sessionId, refreshToken });
-  return session;
-  const newSession = createSession();
-
-  await Session.deleteOne({ _id: sessionId, refreshToken });
 
   return await Session.create({
     userId: session.userId,
@@ -119,25 +113,6 @@ export const requestPasswordReset = async (email) => {
     {
       expiresIn: '5m',
     },
-  );
-
-  const template = Handlebars.compile(REQUEST_PASSWORD_RESET_TEMPLATE);
-
-  await sendEmail({
-    from: getEnvVariable(SMTP.SMTP_FROM),
-    to: email,
-    subject: 'Reset password instruction',
-    html: template({
-      resetPasswordLink: `http://localhost:3000/reset-password?token=${token}`,
-    }),
-  });
-    throw createHttpError(404, 'User not found!');
-  }
-
-  const token = jwt.sign(
-    { sub: user._id, email },
-    getEnvVariable('JWT_SECRET'),
-    { expiresIn: '5m' },
   );
 
   const appDomain = getEnvVariable('APP_DOMAIN');
