@@ -1,0 +1,16 @@
+description: Bad Request — The server could not process the request due to invalid input.
+content:
+  application/json:
+    schema:
+      type: object
+      required:
+        - status
+        - message
+        - data
+      properties:
+        status:
+          type: integer
+          example: 400
+        message:
+          type: string
+          example: 'Invalid contact ID format'

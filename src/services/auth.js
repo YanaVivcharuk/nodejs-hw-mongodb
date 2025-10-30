@@ -57,7 +57,7 @@ export const logoutUser = async (sessionId) => {
   await Session.deleteOne({ _id: sessionId });
 };
 
-const createSessionTokens = () => {
+const createSession = () => {
   const accessToken = randomBytes(30).toString('base64');
   const refreshToken = randomBytes(30).toString('base64');
 
@@ -70,23 +70,27 @@ const createSessionTokens = () => {
 };
 
 export const refreshUsersSession = async ({ sessionId, refreshToken }) => {
-  const session = await Session.findOne({ _id: sessionId, refreshToken });
+  const session = await Session.findOne({
+    _id: sessionId,
+    refreshToken,
+  });
 
   if (!session) {
     throw createHttpError(401, 'Session not found');
+  }
+
+  if (session.refreshToken !== refreshToken) {
+    throw createHttpError(401, 'Invalid refresh token');
   }
 
   if (session.refreshTokenValidUntil < new Date()) {
     throw createHttpError(401, 'Refresh token expired');
   }
 
-  const tokens = createSessionTokens();
-
-  session.accessToken = tokens.accessToken;
-  session.refreshToken = tokens.refreshToken;
-  session.accessTokenValidUntil = tokens.accessTokenValidUntil;
-  session.refreshTokenValidUntil = tokens.refreshTokenValidUntil;
-  await session.save();
+  const isSessionTokenExpired = new Date() > session.refreshTokenValidUntil;
+  if (isSessionTokenExpired) {
+    throw createHttpError(401, 'Refresh token expired');
+  }
 
   return {
     sessionId: session._id,
@@ -98,13 +102,14 @@ export const refreshUsersSession = async ({ sessionId, refreshToken }) => {
 export const requestPasswordReset = async (email) => {
   const user = await User.findOne({ email });
   if (!user) {
-    throw createHttpError(404, 'User not found!');
+    throw createHttpError(404, 'User not found');
   }
-
   const token = jwt.sign(
     { sub: user._id, email },
     getEnvVariable('JWT_SECRET'),
-    { expiresIn: '5m' },
+    {
+      expiresIn: '5m',
+    },
   );
 
   const appDomain = getEnvVariable('APP_DOMAIN');
