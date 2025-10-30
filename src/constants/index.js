@@ -1,4 +1,5 @@
 import path from 'node:path';
+export const SWAGGER_PATH = '/api-docs';
 
 export const SORT_ORDER = {
   ASC: 'asc',
