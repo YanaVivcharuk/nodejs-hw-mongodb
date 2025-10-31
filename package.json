@@ -40,8 +40,9 @@
     "mongoose": "^8.18.1",
     "multer": "^2.0.2",
     "node-fetch": "^3.3.2",
-    "swagger-ui-express": "^5.0.1",
     "nodemailer": "^7.0.10",
-    "pino-http": "^10.5.0"
+    "pino-http": "^10.5.0",
+    "swagger": "^0.7.5",
+    "swagger-ui-express": "^5.0.1"
   }
 }
