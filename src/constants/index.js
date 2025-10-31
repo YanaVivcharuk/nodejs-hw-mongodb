@@ -3,7 +3,7 @@ import { fileURLToPath } from 'node:url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-export const SWAGGER_PATH = path.join(__dirname, '../docs/swagger.json');
+export const SWAGGER_PATH = path.join(process.cwd(), 'docs', 'swagger.json');
 
 export const SORT_ORDER = {
   ASC: 'asc',
